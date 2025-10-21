@@ -1,14 +1,14 @@
-Byte-compiled / optimized / DLL files
+# Byte-compiled / optimized / DLL files
 
 pycache/
 *.py[cod]
 *$py.class
 
-C extensions
+# C extensions
 
 *.so
 
-Distribution / packaging
+# Distribution / packaging
 
 .Python
 build/
@@ -28,25 +28,22 @@ wheels/
 *.egg
 MANIFEST
 
-uv virtual environment
+# uv virtual environment
 
 .venv/
 
-PyInstaller
-
-Usually these files are written by a python script from a template
-
-before PyInstaller builds the exe, so as to inject date/other infos into it.
+# PyInstaller
+# Usually these files are written by a python script from a template before PyInstaller builds the exe, so as to inject date/other infos into it.
 
 *.manifest
 *.spec
 
-Installer logs
+# Installer logs
 
 pip-log.txt
 pip-delete-this-directory.txt
 
-Unit test / coverage reports
+# Unit test / coverage reports
 
 htmlcov/
 .tox/
@@ -60,16 +57,16 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 
-dbt
+#dbt
 
 dbt/logs/
 dbt/target/
 
-MLflow
+# MLflow
 
 mlruns/
 
-IDE settings
+# IDE settings
 
 .idea/
 .vscode/

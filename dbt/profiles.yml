@@ -1,0 +1,19 @@
+telco_pipeline:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: 'target/dev.duckdb'
+      extensions:
+        - httpfs
+        - parquet
+      settings:
+        s3_region: eu-west-3
+    prod:
+      type: duckdb
+      path: 'target/prod.duckdb'
+      extensions:
+        - httpfs
+        - parquet
+      settings:
+        s3_region: eu-west-3

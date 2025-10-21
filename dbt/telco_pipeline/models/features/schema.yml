@@ -1,0 +1,143 @@
+version: 2
+
+models:
+  - name: fct_churn_features
+    description: "Feature engineering model with derived features for churn prediction"
+    config:
+      materialized: table
+      tags: ['features', 'ml']
+
+    columns:
+      - name: customer_id
+        description: "Unique customer identifier"
+        tests:
+          - unique
+          - not_null
+
+      - name: has_churned
+        description: "Target variable - whether the customer churned"
+        tests:
+          - not_null
+
+      # Original features
+      - name: gender
+        description: "Customer gender"
+
+      - name: is_senior_citizen
+        description: "Senior citizen flag"
+
+      - name: has_partner
+        description: "Has partner flag"
+
+      - name: has_dependents
+        description: "Has dependents flag"
+
+      - name: tenure_months
+        description: "Tenure in months"
+        tests:
+          - not_null
+
+      - name: monthly_charges
+        description: "Current monthly charges"
+        tests:
+          - not_null
+
+      - name: total_charges
+        description: "Total charges to date"
+
+      - name: contract_type
+        description: "Type of contract"
+
+      - name: is_paperless_billing
+        description: "Paperless billing flag"
+
+      - name: payment_method
+        description: "Payment method"
+
+      - name: has_phone_service
+        description: "Phone service flag"
+
+      - name: internet_service
+        description: "Internet service type"
+
+      # Engineered features - Tenure
+      - name: tenure_years
+        description: "Tenure converted to years"
+
+      - name: tenure_group
+        description: "Tenure segmentation: new (<12mo), medium (12-36mo), long_term (>36mo)"
+        tests:
+          - accepted_values:
+              values: ['new', 'medium', 'long_term']
+
+      # Engineered features - Financial
+      - name: avg_monthly_charges
+        description: "Average monthly charges (total_charges / tenure_months)"
+
+      - name: charge_velocity
+        description: "Rate of change in charges (current - average)"
+
+      - name: lifetime_value_proxy
+        description: "Customer lifetime value estimate (monthly_charges * tenure_months)"
+
+      - name: revenue_per_service
+        description: "Revenue efficiency (monthly_charges / service_count)"
+
+      - name: is_high_value
+        description: "Flag for customers with above-median monthly charges"
+
+      # Engineered features - Contract & Billing
+      - name: is_month_to_month
+        description: "Flag for month-to-month contracts (high churn risk)"
+
+      - name: is_electronic_payment
+        description: "Flag for electronic payment methods"
+
+      # Engineered features - Services
+      - name: has_internet_service
+        description: "Flag for any internet service"
+
+      - name: has_fiber_optic
+        description: "Flag for fiber optic service (premium tier)"
+
+      - name: online_security
+        description: "Online security service status"
+
+      - name: online_backup
+        description: "Online backup service status"
+
+      - name: device_protection
+        description: "Device protection service status"
+
+      - name: tech_support
+        description: "Tech support service status"
+
+      - name: streaming_tv
+        description: "Streaming TV service status"
+
+      - name: streaming_movies
+        description: "Streaming movies service status"
+
+      - name: multiple_lines
+        description: "Multiple phone lines status"
+
+      - name: total_services_count
+        description: "Count of premium services (0-6)"
+        tests:
+          - not_null
+
+      - name: has_premium_services
+        description: "Flag indicating if customer has any premium services"
+        tests:
+          - not_null
+
+      # Engineered features - Risk Scores
+      - name: churn_risk_score
+        description: "Composite churn risk score based on known patterns (higher = more risk)"
+        tests:
+          - not_null
+
+      - name: engagement_score
+        description: "Customer engagement score (higher = more engaged)"
+        tests:
+          - not_null
