@@ -1,0 +1,11 @@
+{
+  "recommendations": [
+    "charliermarsh.ruff",
+    "ms-python.python",
+    "ms-python.vscode-pylance",
+    "bastienboutonnet.vscode-dbt",
+    "innoverio.vscode-dbt-power-user",
+    "redhat.vscode-yaml",
+    "tamasfe.even-better-toml"
+  ]
+}

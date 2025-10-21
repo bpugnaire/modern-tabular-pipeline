@@ -69,5 +69,4 @@ mlruns/
 # IDE settings
 
 .idea/
-.vscode/
 uv.lock
