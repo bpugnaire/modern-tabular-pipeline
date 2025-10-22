@@ -7,7 +7,7 @@ This guide explains how to configure DuckDB to read data from Google Cloud Stora
 - **GCP Project**: `modern-tabular-pipeline-dev`
 - **GCS Bucket**: `gs://modern-tabular-dev/`
 - **Data Location**: `gs://modern-tabular-dev/data/raw/Telco-Customer-Churn.csv`
-- **Region**: `eu-west-3` (Paris)
+- **Region**: `europe-west9` (Paris)
 
 ## Prerequisites
 

@@ -61,8 +61,8 @@ extensions:
   - httpfs
   - parquet
 settings:
-  s3_region: eu-west-3
-  gcs_region: eu-west-3
+  s3_region: europe-west9
+  gcs_region: europe-west9
 ```
 
 DuckDB's `httpfs` extension handles GCS access automatically when `GOOGLE_APPLICATION_CREDENTIALS` is set.

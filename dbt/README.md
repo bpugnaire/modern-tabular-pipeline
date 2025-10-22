@@ -130,7 +130,7 @@ Advanced feature engineering using Polars for high-performance transformations:
 - **Target**: `dev` (default)
 - **Database**: `target/dev.duckdb`
 - **Extensions**: `httpfs`, `parquet`
-- **Region**: `eu-west-3` (Paris)
+- **Region**: `europe-west9` (Paris)
 
 ### Materialization Strategy
 - **Staging models**: Materialized as `table`
