@@ -32,8 +32,8 @@ test:
 	@echo "✓ Tests passed"
 
 train:
-	@echo "Running default training pipeline..."
-	uv run python src/tabular_pipeline/pipelines/train.py
+	@echo "Running training pipeline..."
+	@set -a && . ./.env && set +a && uv run python -m src.tasks.train
 	@echo "✓ Training complete"
 
 build:

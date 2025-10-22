@@ -71,3 +71,19 @@ mlruns/
 .idea/
 uv.lock
 .env
+mlruns/
+outputs/
+catboost_info/
+
+# Training artifacts
+catboost_info/
+mlruns/
+outputs/
+
+# Model checkpoints
+*.cbm
+*.pkl
+*.joblib
+
+# Hydra outputs
+.hydra/

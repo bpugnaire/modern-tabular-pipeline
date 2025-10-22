@@ -1,0 +1,31 @@
+# GCS credentials
+GCS_KEY_ID: ${oc.env:GCS_KEY_ID}
+GCS_SECRET: ${oc.env:GCS_SECRET}
+
+# Data paths
+data:
+  features_path: "gs://modern-tabular-dev/data/features/churn_features.parquet"
+
+# Model configuration
+model:
+  type: catboost
+  target: has_churned
+  iterations: 100
+  learning_rate: 0.1
+  depth: 6
+  verbose: false
+
+# Training parameters
+training:
+  test_size: 0.2
+  random_state: 42
+
+# MLflow tracking
+mlflow:
+  experiment_name: "churn_prediction"
+  tracking_uri: "mlruns"
+
+# Hydra configuration
+hydra:
+  run:
+    dir: outputs/${now:%Y-%m-%d}/${now:%H-%M-%S}
