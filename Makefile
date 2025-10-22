@@ -1,14 +1,15 @@
-.PHONY: install quality test train build deploy clean help
+.PHONY: install quality test train build deploy clean gcs-setup help
 
 help:
 	@echo "Available targets:"
-	@echo "  install  - Set up development environment with uv"
-	@echo "  quality  - Run code quality checks (Ruff, Mypy)"
-	@echo "  test     - Run pytest test suite"
-	@echo "  train    - Run default training pipeline"
-	@echo "  build    - Build production Docker image"
-	@echo "  deploy   - Deploy to cloud environment"
-	@echo "  clean    - Remove temporary files and caches"
+	@echo "  install    - Set up development environment with uv"
+	@echo "  quality    - Run code quality checks (Ruff, Mypy)"
+	@echo "  test       - Run pytest test suite"
+	@echo "  train      - Run default training pipeline"
+	@echo "  build      - Build production Docker image"
+	@echo "  deploy     - Deploy to cloud environment"
+	@echo "  gcs-setup  - Set up and test Google Cloud Storage access"
+	@echo "  clean      - Remove temporary files and caches"
 
 install:
 	@echo "Installing dependencies with uv..."
@@ -44,6 +45,11 @@ deploy:
 	@echo "Deploying to cloud environment..."
 	@bash infra/deploy.sh
 	@echo "✓ Deployment complete"
+
+gcs-setup:
+	@echo "Setting up Google Cloud Storage access..."
+	@bash dbt/setup_gcs.sh
+	@echo "✓ GCS setup complete"
 
 clean:
 	@echo "Cleaning up temporary files..."

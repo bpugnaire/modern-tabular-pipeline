@@ -62,6 +62,29 @@ Reads the IBM Telco Customer Churn dataset directly from GitHub and performs:
 - Non-null constraints on key fields
 - Accepted values validation for categorical fields
 
+#### `stg_churn_gcs.sql`
+Same as `stg_churn.sql` but reads from Google Cloud Storage bucket.
+
+**Source**: `gs://modern-tabular-dev/data/raw/Telco-Customer-Churn.csv`
+
+**Requirements**:
+- GCP authentication configured (see [GCS_SETUP.md](GCS_SETUP.md))
+- Storage Object Viewer permissions on the bucket
+
+**Setup**:
+```bash
+# Run the automated setup script
+./setup_gcs.sh
+
+# Or manually authenticate
+gcloud auth application-default login
+gcloud config set project modern-tabular-pipeline-dev
+```
+
+**Output**: 7,043 rows × 21 columns
+
+**Tests**: 17 data quality tests
+
 ### Features Layer (`models/features/`)
 
 #### `fct_churn_features.py` (Python/Polars)

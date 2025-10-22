@@ -9,6 +9,9 @@ telco_pipeline:
         - parquet
       settings:
         s3_region: eu-west-3
+        # GCS configuration
+        gcs_region: eu-west-3
+        # DuckDB will use GOOGLE_APPLICATION_CREDENTIALS env var for authentication
     prod:
       type: duckdb
       path: 'target/prod.duckdb'
@@ -17,3 +20,4 @@ telco_pipeline:
         - parquet
       settings:
         s3_region: eu-west-3
+        gcs_region: eu-west-3

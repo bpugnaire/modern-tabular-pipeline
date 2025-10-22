@@ -2,7 +2,85 @@ version: 2
 
 models:
   - name: stg_churn
-    description: "Staging model for Telco customer churn data with cleaned and typed columns"
+    description: "Staging model for Telco customer churn data with cleaned and typed columns. Reads from public GitHub URL."
+    columns:
+      - name: customer_id
+        description: "Unique customer identifier"
+        tests:
+          - unique
+          - not_null
+
+      - name: gender
+        description: "Customer gender (Male/Female)"
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Male', 'Female']
+
+      - name: is_senior_citizen
+        description: "Whether the customer is a senior citizen (1=Yes, 0=No)"
+        tests:
+          - not_null
+
+      - name: has_partner
+        description: "Whether the customer has a partner"
+        tests:
+          - not_null
+
+      - name: has_dependents
+        description: "Whether the customer has dependents"
+        tests:
+          - not_null
+
+      - name: tenure_months
+        description: "Number of months the customer has been with the company"
+        tests:
+          - not_null
+
+      - name: has_phone_service
+        description: "Whether the customer has phone service"
+        tests:
+          - not_null
+
+      - name: internet_service
+        description: "Type of internet service (DSL, Fiber optic, No)"
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['DSL', 'Fiber optic', 'No']
+
+      - name: contract_type
+        description: "Type of contract (Month-to-month, One year, Two year)"
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Month-to-month', 'One year', 'Two year']
+
+      - name: is_paperless_billing
+        description: "Whether the customer uses paperless billing"
+        tests:
+          - not_null
+
+      - name: payment_method
+        description: "Payment method used by the customer"
+        tests:
+          - not_null
+
+      - name: monthly_charges
+        description: "Monthly charges for the customer"
+        tests:
+          - not_null
+
+      - name: total_charges
+        description: "Total charges for the customer (can be null for new customers)"
+
+      - name: has_churned
+        description: "Target variable - whether the customer churned"
+        tests:
+          - not_null
+
+  - name: stg_churn_gcs
+    description: "Staging model for Telco customer churn data with cleaned and typed columns. Reads from GCS bucket (gs://modern-tabular-dev/data/raw/)."
     columns:
       - name: customer_id
         description: "Unique customer identifier"
