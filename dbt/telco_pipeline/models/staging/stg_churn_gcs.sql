@@ -11,7 +11,7 @@
 with source_data as (
     select *
     from read_csv_auto(
-        'gs://modern-tabular-dev/data/raw/Telco-Customer-Churn.csv',
+        'gs://modern-tabular-dev/data/raw/telco_churn.csv',
         header=true,
         delim=',',
         quote='"'

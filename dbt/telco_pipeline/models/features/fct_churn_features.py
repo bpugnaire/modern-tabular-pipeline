@@ -4,12 +4,10 @@ import polars as pl
 def model(dbt, session):
     """
     Feature engineering model for churn prediction.
-    Creates derived features from the staging table using Polars.
+    Creates derived features and writes to GCS for ML consumption.
     """
-    # Load the staging table - dbt-duckdb returns a DuckDBPyRelation
+    # Load the staging table
     stg_churn = dbt.ref("stg_churn")
-
-    # Convert to Polars DataFrame via Arrow
     df = pl.from_arrow(stg_churn.arrow())
 
     # Feature Engineering
@@ -18,12 +16,12 @@ def model(dbt, session):
             # Original columns
             pl.col("customer_id"),
             pl.col("has_churned"),
-            # Demographics features
+            # Demographics
             pl.col("gender"),
             pl.col("is_senior_citizen"),
             pl.col("has_partner"),
             pl.col("has_dependents"),
-            # Tenure-based features
+            # Tenure
             pl.col("tenure_months"),
             (pl.col("tenure_months") / 12).alias("tenure_years"),
             pl.when(pl.col("tenure_months") <= 12)
@@ -32,48 +30,41 @@ def model(dbt, session):
             .then(pl.lit("medium"))
             .otherwise(pl.lit("long_term"))
             .alias("tenure_group"),
-            # Financial features
+            # Financial
             pl.col("monthly_charges"),
             pl.col("total_charges"),
-            # Average charges per month (handling nulls for new customers)
             (pl.col("total_charges") / pl.col("tenure_months"))
             .fill_null(pl.col("monthly_charges"))
             .alias("avg_monthly_charges"),
-            # Revenue velocity (difference between current and average)
             (
                 pl.col("monthly_charges")
                 - (pl.col("total_charges") / pl.col("tenure_months"))
             )
             .fill_null(0)
             .alias("charge_velocity"),
-            # Contract & Billing features
+            # Contract & Billing
             pl.col("contract_type"),
             pl.col("is_paperless_billing"),
             pl.col("payment_method"),
-            # Contract risk indicator
             pl.when(pl.col("contract_type") == "Month-to-month")
             .then(pl.lit(True))
             .otherwise(pl.lit(False))
             .alias("is_month_to_month"),
-            # Electronic payment indicator
             pl.when(pl.col("payment_method").str.contains("Electronic"))
             .then(pl.lit(True))
             .otherwise(pl.lit(False))
             .alias("is_electronic_payment"),
-            # Service features
+            # Services
             pl.col("has_phone_service"),
             pl.col("internet_service"),
-            # Internet service indicator
             pl.when(pl.col("internet_service") == "No")
             .then(pl.lit(False))
             .otherwise(pl.lit(True))
             .alias("has_internet_service"),
-            # Fiber optic indicator (premium service)
             pl.when(pl.col("internet_service") == "Fiber optic")
             .then(pl.lit(True))
             .otherwise(pl.lit(False))
             .alias("has_fiber_optic"),
-            # Additional services
             pl.col("online_security"),
             pl.col("online_backup"),
             pl.col("device_protection"),
@@ -84,7 +75,7 @@ def model(dbt, session):
         ]
     )
 
-    # Count total services subscribed
+    # Service count
     service_cols = [
         "online_security",
         "online_backup",
@@ -94,7 +85,6 @@ def model(dbt, session):
         "streaming_movies",
     ]
 
-    # Create service count feature
     features = features.with_columns(
         [
             pl.sum_horizontal(
@@ -103,7 +93,6 @@ def model(dbt, session):
                     for col in service_cols
                 ]
             ).alias("total_services_count"),
-            # Has any premium services
             pl.when(pl.any_horizontal([pl.col(col) == "Yes" for col in service_cols]))
             .then(pl.lit(True))
             .otherwise(pl.lit(False))
@@ -111,17 +100,15 @@ def model(dbt, session):
         ]
     )
 
-    # Customer lifetime value proxy
+    # Derived metrics
     features = features.with_columns(
         [
             (pl.col("monthly_charges") * pl.col("tenure_months")).alias(
                 "lifetime_value_proxy"
             ),
-            # Revenue per service (efficiency metric)
             (pl.col("monthly_charges") / (pl.col("total_services_count") + 1)).alias(
                 "revenue_per_service"
             ),
-            # High value customer indicator
             pl.when(pl.col("monthly_charges") > pl.col("monthly_charges").median())
             .then(pl.lit(True))
             .otherwise(pl.lit(False))
@@ -129,10 +116,9 @@ def model(dbt, session):
         ]
     )
 
-    # Churn risk indicators
+    # Risk scores
     features = features.with_columns(
         [
-            # Risk score based on known churn patterns
             (
                 (pl.col("is_month_to_month").cast(pl.Int8) * 3)
                 + (pl.col("has_fiber_optic").cast(pl.Int8) * 2)
@@ -140,7 +126,6 @@ def model(dbt, session):
                 + ((pl.col("total_services_count") == 0).cast(pl.Int8) * 2)
                 + (pl.col("is_paperless_billing").cast(pl.Int8) * 1)
             ).alias("churn_risk_score"),
-            # Engagement score (positive indicator)
             (
                 (pl.col("has_partner").cast(pl.Int8) * 1)
                 + (pl.col("has_dependents").cast(pl.Int8) * 1)
@@ -149,5 +134,26 @@ def model(dbt, session):
             ).alias("engagement_score"),
         ]
     )
+
+    # Write to GCS
+    import os
+
+    gcs_key_id = os.getenv("GCS_KEY_ID")
+    gcs_secret = os.getenv("GCS_SECRET")
+
+    if gcs_key_id and gcs_secret:
+        storage_options = {
+            "gcs_key_id": gcs_key_id,
+            "gcs_secret": gcs_secret,
+        }
+
+        gcs_path = "gs://modern-tabular-dev/data/features/churn_features.parquet"
+
+        try:
+            features.write_parquet(gcs_path, storage_options=storage_options)
+            print(f"✓ Features written to {gcs_path}")
+        except Exception as e:
+            print(f"⚠️  Could not write to GCS: {e}")
+            print("   Features available in DuckDB table only")
 
     return features.to_arrow()
