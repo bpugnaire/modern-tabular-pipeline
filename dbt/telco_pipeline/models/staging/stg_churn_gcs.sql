@@ -1,7 +1,10 @@
 {{
     config(
         materialized='table',
-        tags=['staging', 'gcs']
+        tags=['staging', 'gcs'],
+        pre_hook=[
+            "CREATE OR REPLACE SECRET gcs_secret (TYPE GCS, KEY_ID '{{ env_var('GCS_KEY_ID') }}', SECRET '{{ env_var('GCS_SECRET') }}')"
+        ]
     )
 }}
 

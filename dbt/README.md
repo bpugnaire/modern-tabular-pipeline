@@ -67,23 +67,19 @@ Same as `stg_churn.sql` but reads from Google Cloud Storage bucket.
 
 **Source**: `gs://modern-tabular-dev/data/raw/Telco-Customer-Churn.csv`
 
-**Requirements**:
-- GCP authentication configured (see [GCS_SETUP.md](GCS_SETUP.md))
-- Storage Object Viewer permissions on the bucket
-
-**Setup**:
+**Setup**: See [GCS.md](GCS.md)
 ```bash
-# Run the automated setup script
-./setup_gcs.sh
+# 1. Copy .env template
+cp .env.example .env
 
-# Or manually authenticate
-gcloud auth application-default login
-gcloud config set project modern-tabular-pipeline-dev
+# 2. Add your HMAC credentials to .env
+# (Get from: gsutil hmac create ...)
+
+# 3. Run it
+make dbt-gcs
 ```
 
 **Output**: 7,043 rows × 21 columns
-
-**Tests**: 17 data quality tests
 
 ### Features Layer (`models/features/`)
 

@@ -1,4 +1,4 @@
-.PHONY: install quality test train build deploy clean gcs-setup help
+.PHONY: install quality test train build deploy dbt-gcs clean help
 
 help:
 	@echo "Available targets:"
@@ -8,7 +8,7 @@ help:
 	@echo "  train      - Run default training pipeline"
 	@echo "  build      - Build production Docker image"
 	@echo "  deploy     - Deploy to cloud environment"
-	@echo "  gcs-setup  - Set up and test Google Cloud Storage access"
+	@echo "  dbt-gcs    - Run dbt GCS model (requires GCS_KEY_ID and GCS_SECRET env vars)"
 	@echo "  clean      - Remove temporary files and caches"
 
 install:
@@ -46,10 +46,11 @@ deploy:
 	@bash infra/deploy.sh
 	@echo "✓ Deployment complete"
 
-gcs-setup:
-	@echo "Setting up Google Cloud Storage access..."
-	@bash dbt/setup_gcs.sh
-	@echo "✓ GCS setup complete"
+dbt-gcs:
+	@echo "Running dbt GCS model..."
+	@if [ ! -f .env ]; then echo "Error: .env file not found. Copy .env.example and add your credentials."; exit 1; fi
+	@set -a && . ./.env && set +a && cd dbt/telco_pipeline && uv run dbt run --profiles-dir .. --select stg_churn_gcs
+	@echo "✓ GCS model complete"
 
 clean:
 	@echo "Cleaning up temporary files..."

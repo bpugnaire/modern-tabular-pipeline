@@ -70,3 +70,4 @@ mlruns/
 
 .idea/
 uv.lock
+.env
