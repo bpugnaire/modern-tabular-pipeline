@@ -8,9 +8,15 @@ authors = [
 dependencies = [
     "catboost>=1.2.8",
     "hydra-core>=1.3.2",
+    "jupyter>=1.1.1",
+    "matplotlib>=3.9.4",
     "mlflow>=3.1.4",
     "pandera>=0.26.1",
+    "plotly>=6.3.1",
+    "python-dotenv>=1.1.1",
     "scikit-learn>=1.6.1",
+    "seaborn>=0.13.2",
+    "shap>=0.49.1",
 ]
 requires-python = ">=3.9"
 readme = "README.md"
