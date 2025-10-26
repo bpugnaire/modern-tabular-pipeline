@@ -1,6 +1,6 @@
 """Data schemas for validation using Pandera."""
 
-import pandera as pa
+import pandera.pandas as pa
 import pandera.polars as ppa
 from pandera import Column, DataFrameSchema
 
