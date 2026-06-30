@@ -13,6 +13,7 @@ model:
   iterations: 100
   learning_rate: 0.1
   depth: 6
+  auto_class_weights: Balanced
   verbose: false
 
 # Training parameters

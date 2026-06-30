@@ -1,0 +1,79 @@
+name: Train Model on Vertex AI
+
+on:
+  schedule:
+    # Run weekly on Mondays at 2am UTC
+    - cron: '0 2 * * 1'
+  workflow_dispatch:
+    inputs:
+      config_name:
+        description: 'Training config name'
+        required: false
+        default: 'default'
+        type: string
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  REGION: us-central1
+  IMAGE_NAME: churn-training
+
+jobs:
+  train:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for GCR
+        run: gcloud auth configure-docker
+
+      - name: Build Docker image
+        run: |
+          docker build \
+            -f infra/docker/Dockerfile.train \
+            -t gcr.io/${{ env.PROJECT_ID }}/${{ env.IMAGE_NAME }}:${{ github.sha }} \
+            -t gcr.io/${{ env.PROJECT_ID }}/${{ env.IMAGE_NAME }}:latest \
+            .
+
+      - name: Push Docker image
+        run: |
+          docker push gcr.io/${{ env.PROJECT_ID }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          docker push gcr.io/${{ env.PROJECT_ID }}/${{ env.IMAGE_NAME }}:latest
+
+      - name: Submit training job to Vertex AI
+        id: submit-job
+        run: |
+          JOB_NAME="churn-training-$(date +%Y%m%d-%H%M%S)"
+          CONFIG_NAME="${{ github.event.inputs.config_name || 'default' }}"
+
+          gcloud ai custom-jobs create \
+            --region=${{ env.REGION }} \
+            --display-name=${JOB_NAME} \
+            --worker-pool-spec=machine-type=n1-standard-4,replica-count=1,container-image-uri=gcr.io/${{ env.PROJECT_ID }}/${{ env.IMAGE_NAME }}:${{ github.sha }} \
+            --args="--config-name=${CONFIG_NAME}"
+
+          echo "job_name=${JOB_NAME}" >> $GITHUB_OUTPUT
+
+      - name: Create training summary
+        run: |
+          echo "## Training Job Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Job Name**: ${{ steps.submit-job.outputs.job_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Region**: ${{ env.REGION }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Image**: gcr.io/${{ env.PROJECT_ID }}/${{ env.IMAGE_NAME }}:${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Monitor Training" >> $GITHUB_STEP_SUMMARY
+          echo "View job status in [Vertex AI Console](https://console.cloud.google.com/vertex-ai/training/custom-jobs?project=${{ env.PROJECT_ID }})" >> $GITHUB_STEP_SUMMARY

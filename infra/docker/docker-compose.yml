@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  # MLflow tracking server
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.11.0
+    container_name: mlflow
+    ports:
+      - "5000:5000"
+    volumes:
+      - mlflow_data:/mlflow
+    command: mlflow server --host 0.0.0.0 --port 5000 --backend-store-uri /mlflow --default-artifact-root /mlflow/artifacts
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Training service
+  training:
+    build:
+      context: ../..
+      dockerfile: infra/docker/Dockerfile.train
+    container_name: churn-training
+    depends_on:
+      - mlflow
+    environment:
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+      - GCS_KEY_ID=${GCS_KEY_ID}
+      - GCS_SECRET=${GCS_SECRET}
+    volumes:
+      - mlflow_data:/app/mlruns
+    profiles:
+      - training
+
+  # API service
+  api:
+    build:
+      context: ../..
+      dockerfile: infra/docker/Dockerfile.api
+    container_name: churn-api
+    ports:
+      - "8000:8080"
+    environment:
+      - PORT=8080
+      - MODEL_URI=${MODEL_URI:-}
+      - MODEL_PATH=${MODEL_PATH:-}
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    depends_on:
+      - mlflow
+
+volumes:
+  mlflow_data:
+    driver: local

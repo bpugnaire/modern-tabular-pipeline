@@ -105,6 +105,9 @@ class TrainingPipeline(BasePipeline):
                 iterations=self.config.model.get("iterations", 100),
                 learning_rate=self.config.model.get("learning_rate", 0.1),
                 depth=self.config.model.get("depth", 6),
+                auto_class_weights=self.config.model.get(
+                    "auto_class_weights", "Balanced"
+                ),
                 random_state=self.config.training.random_state,
                 verbose=self.config.model.get("verbose", False),
             )
