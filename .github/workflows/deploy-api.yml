@@ -1,14 +1,6 @@
 name: Deploy API to Cloud Run
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'src/api/**'
-      - 'src/models/**'
-      - 'infra/docker/Dockerfile.api'
-      - '.github/workflows/deploy-api.yml'
   workflow_dispatch:
     inputs:
       model_uri:
